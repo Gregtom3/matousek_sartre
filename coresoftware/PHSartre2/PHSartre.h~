@@ -9,9 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "TFile.h"
-#include "TTree.h"
-
 class PHCompositeNode;
 class PHHepMCGenEvent;
 class PHHepMCFilter;

@@ -35,9 +35,6 @@ PHSartre::PHSartre(const std::string &name)
   , daughterID(-1)
   , daughterMasses{0., 0.}
   , doPerformDecay(false)
-  , _filename(name)
-  , _tfile(nullptr)
-  , _outTree(nullptr)
 {
   char *charPath = getenv("SARTRE_DIR");
   if (!charPath)
@@ -104,12 +101,6 @@ int PHSartre::Init(PHCompositeNode *topNode)
     cout << endl;
   }
 
-  _tfile = new TFile(_filename.c_str(), "RECREATE");
-
-  /* Add tree branches */
-
-  _outTree = new TTree("event_sartre","A Tree with Sartre Root Output");
-  _outTree->Branch("event", &_eventcount, "event/I");
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -133,10 +124,6 @@ int PHSartre::End(PHCompositeNode *topNode)
   cout << " *-------  End PHSARTRE Trigger Statistics  ------------------------"
        << "-------------------------------------------------* " << endl;
 
-  cout << " Tree Printing " << endl;
-  _tfile->cd();
-  _outTree->Write();
-  _tfile->Close();
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -450,8 +437,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
       cout << "PHSartre: WARNING: Kinematics of Vector Meson does not allow decay!" << endl;
     }
 
-    /* fill event information tree */
-    _outTree->Fill();
+    &event->list();
   }
 
   // pass HepMC to PHNode

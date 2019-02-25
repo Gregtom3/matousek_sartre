@@ -35,7 +35,7 @@ PHSartre::PHSartre(const std::string &name)
   , daughterID(-1)
   , daughterMasses{0., 0.}
   , doPerformDecay(false)
-  , _filename(name)
+  , _filename("Unknown")
   , _tfile(nullptr)
   , _outTree(nullptr)
 {
