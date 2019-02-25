@@ -122,7 +122,7 @@ int Fun4All_MCEventGen(
       // setenv SARTRE_DIR /opt/sphenix/core/sartre-1.20_root-5.34.36
       gSystem->Load("libPHSartre.so");
 
-      PHSartre* mysartre = new PHSartre();
+      PHSartre* mysartre = new PHSartre(outputFile);
       // see coresoftware/generators/PHSartre for example config
       mysartre->set_config_file("sartre.cfg");
 
