@@ -152,7 +152,6 @@ int PHSartre::End(PHCompositeNode *topNode)
   cout << " *-------  End PHSARTRE Trigger Statistics  ------------------------"
        << "-------------------------------------------------* " << endl;
 
-  cout << " Tree Printing " << endl;
   _tfile->cd();
   _outTree->Write();
   _tfile->Close();
