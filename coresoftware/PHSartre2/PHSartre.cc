@@ -110,6 +110,25 @@ int PHSartre::Init(PHCompositeNode *topNode)
 
   _outTree = new TTree("event_sartre","A Tree with Sartre Root Output");
   _outTree->Branch("event", &_eventcount, "event/I");
+
+  _outTree->Branch("x", &event_x, "x");
+  _outTree->Branch("Q2", &event_Q2, "Q2");
+  _outTree->Branch("W", &event_W, "W");
+  _outTree->Branch("t", &event_t, "t");
+  _outTree->Branch("y", &event_y, "y");
+  _outTree->Branch("s", &event_s, "s");
+  _outTree->Branch("cross_section", &cross_section, "xsection nb");
+
+  _outTree->Branch("particle_px", &particle_px);
+  _outTree->Branch("particle_py", &particle_py);
+  _outTree->Branch("particle_pz", &particle_pz);
+  _outTree->Branch("particle_id", &particle_id);
+  _outTree->Branch("particle_E", &particle_E);
+  _outTree->Branch("particle_theta", &particle_theta);
+  _outTree->Branch("particle_phi", &particle_phi);
+  _outTree->Branch("particle_eta", &particle_eta);
+  _outTree->Branch("particle_status", &particle_status);
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -164,13 +183,16 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   TLorentzVector *vmDecay2 = nullptr;
   unsigned int preVMDecaySize = 0;
 
+  /* Clear Tree Variables */
+  particle_px.clear(); particle_py.clear(); particle_pz.clear(); particle_id.clear(); particle_E.clear(); particle_theta.clear(); particle_phi.clear(); particle_eta.clear();
+
   while (!passedTrigger)
-  {
-    ++_gencount;
-
-    // Generate a Sartre event
-    event = _sartre->generateEvent();
-
+    {
+      ++_gencount;
+      
+      // Generate a Sartre event
+      event = _sartre->generateEvent();
+      
     //
     //  If Sartre is run in UPC mode, half of the events needs to be
     //  rotated around and axis perpendicular to z:
@@ -281,7 +303,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
     {
       passedTrigger = true;
     }
-  }
+    }
 
   // fill HepMC object with event
 
@@ -290,134 +312,119 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   // add some information to the event
   genevent->set_event_number(_eventcount);
 
-  // Set the PDF information
-  HepMC::PdfInfo pdfinfo;
-  pdfinfo.set_scalePDF(event->Q2);
-  genevent->set_pdf_info(pdfinfo);
+  event_x=event->x;
+  event_Q2=event->Q2;
+  event_t=event->t;
+  event_W=event->W;
+  event_y=event->y;
+  event_s=event->s;
 
-  // We would also like to save:
-  //
-  // event->t;
-  // event->x;
-  // event->y;
-  // event->s;
-  // event->W;
-  // event->xpom;
-  // (event->polarization == transverse ? 0 : 1);
-  // (event->diffractiveMode == coherent ? 0 : 1);
-  //
-  // but there doesn't seem to be a good place to do so
-  // within the HepMC event information?
-  //
-  // t, W and Q^2 form a minial set of good variables for diffractive events
-  // Maybe what I do is record the input particles to the event at the HepMC
-  // vertices and reconstruct the kinematics from there?
+  /* Push back initial particle vectors */
+  // eIn
+  particle_px.push_back(eIn->Px());
+  particle_py.push_back(eIn->Py());
+  particle_pz.push_back(eIn->Pz());
+  particle_E.push_back(eIn->E());
+  particle_theta.push_back(eIn->Theta());
+  particle_phi.push_back(eIn->Phi());
+  particle_eta.push_back(-999);
+  particle_id.push_back(event->particles[0].pdgId);
+  particle_status.push_back(0);
 
-  // Create HepMC vertices and add final state particles to them
+  // pIn
+  particle_px.push_back(pIn->Px());
+  particle_py.push_back(pIn->Py());
+  particle_pz.push_back(pIn->Pz());
+  particle_E.push_back(pIn->E());
+  particle_theta.push_back(pIn->Theta());
+  particle_phi.push_back(pIn->Phi());
+  particle_eta.push_back(999);
+  particle_id.push_back(event->particles[1].pdgId);
+  particle_status.push_back(0);
 
-  // First, the emitter(electron)-virtual photon vertex:
+  // gamma
+  particle_px.push_back(gamma->Px());
+  particle_py.push_back(gamma->Py());
+  particle_pz.push_back(gamma->Pz());
+  particle_E.push_back(gamma->E());
+  particle_id.push_back(event->particles[3].pdgId);
+  particle_status.push_back(4);
 
-  HepMC::GenVertex *egammavtx = new HepMC::GenVertex(CLHEP::HepLorentzVector(0.0, 0.0, 0.0, 0.0));
-  genevent->add_vertex(egammavtx);
+  // eOut
+  particle_px.push_back(eOut->Px());
+  particle_py.push_back(eOut->Py());
+  particle_pz.push_back(eOut->Pz());
+  particle_E.push_back(eOut->E());
+  particle_theta.push_back(gamma->Theta());
+  particle_phi.push_back(gamma->Phi());
+  particle_eta.push_back(gamma->Eta());
+  particle_id.push_back(event->particles[2].pdgId);
+  particle_status.push_back(1);
 
-  egammavtx->add_particle_in(
-      new HepMC::GenParticle(CLHEP::HepLorentzVector(eIn->Px(),
-                                                     eIn->Py(),
-                                                     eIn->Pz(),
-                                                     eIn->E()),
-                             event->particles[0].pdgId,
-                             3));
-
-  HepMC::GenParticle *hgamma = new HepMC::GenParticle(CLHEP::HepLorentzVector(gamma->Px(),
-                                                                              gamma->Py(),
-                                                                              gamma->Pz(),
-                                                                              gamma->E()),
-                                                      event->particles[3].pdgId,
-                                                      3);
-
-  egammavtx->add_particle_out(hgamma);
-
-  egammavtx->add_particle_out(
-      new HepMC::GenParticle(CLHEP::HepLorentzVector(eOut->Px(),
-                                                     eOut->Py(),
-                                                     eOut->Pz(),
-                                                     eOut->E()),
-                             event->particles[2].pdgId,
-                             1));
-
-  // Next, the hadron-pomeron vertex:
-
-  HepMC::GenVertex *ppomvtx = new HepMC::GenVertex(CLHEP::HepLorentzVector(0.0, 0.0, 0.0, 0.0));
-  genevent->add_vertex(ppomvtx);
-
-  ppomvtx->add_particle_in(
-      new HepMC::GenParticle(CLHEP::HepLorentzVector(pIn->Px(),
-                                                     pIn->Py(),
-                                                     pIn->Pz(),
-                                                     pIn->E()),
-                             event->particles[1].pdgId,
-                             3));
-
-  HepMC::GenParticle *hPomOut = new HepMC::GenParticle(CLHEP::HepLorentzVector(PomOut->Px(),
-                                                                               PomOut->Py(),
-                                                                               PomOut->Pz(),
-                                                                               PomOut->E()),
-                                                       event->particles[5].pdgId,
-                                                       3);
-
-  ppomvtx->add_particle_out(hPomOut);
+  // hPomOut
+  particle_px.push_back(PomOut->Px());
+  particle_py.push_back(PomOut->Py());
+  particle_pz.push_back(PomOut->Pz());
+  particle_E.push_back(PomOut->E());
+  particle_theta.push_back(PomOut->Theta());
+  particle_phi.push_back(PomOut->Phi());
+  particle_eta.push_back(PomOut->Eta());
+  particle_id.push_back(event->particles[5].pdgId);
+  particle_status.push_back(2);
 
   // If this is a nuclear breakup, add in the nuclear fragments
   // Otherwise, add in the outgoing hadron
 
   //If the event is incoherent, and nuclear breakup is enabled, fill the remnants to the tree
+
   if (settings->enableNuclearBreakup() and event->diffractiveMode == incoherent)
   {
     for (unsigned int iParticle = 7; iParticle < preVMDecaySize; iParticle++)
     {
       if (event->particles[iParticle].status == 1)
-      {  // Final-state particle
+      {
         const Particle &particle = event->particles[iParticle];
-        ppomvtx->add_particle_out(
-            new HepMC::GenParticle(CLHEP::HepLorentzVector(particle.p.Px(),
-                                                           particle.p.Py(),
-                                                           particle.p.Pz(),
-                                                           particle.p.E()),
-                                   particle.pdgId,
-                                   1));
+	particle_px.push_back(particle.p.Px());
+	particle_py.push_back(particle.p.Py());
+	particle_pz.push_back(particle.p.Pz());
+	particle_E.push_back(particle.p.E());
+	// To be implemented //
+	particle_theta.push_back(0);
+	particle_phi.push_back(0);
+	particle_eta.push_back(0);
+
+	particle_id.push_back(particle.pdgId);
+	particle_status.push_back(3);
       }
     }
   }
   else
-  {
-    ppomvtx->add_particle_out(
-        new HepMC::GenParticle(CLHEP::HepLorentzVector(pOut->Px(),
-                                                       pOut->Py(),
-                                                       pOut->Pz(),
-                                                       pOut->E()),
-                               event->particles[6].pdgId,
-                               1));
+    {
+       particle_px.push_back(pOut->Px());
+       particle_py.push_back(pOut->Py());
+       particle_pz.push_back(pOut->Pz());
+       particle_E.push_back(pOut->E());
+       particle_theta.push_back(pOut->Theta());
+       particle_phi.push_back(pOut->Phi());
+       particle_eta.push_back(pOut->Eta());
+       particle_id.push_back(event->particles[6].pdgId);
+       particle_status.push_back(1);
   }
 
-  // The Pomeron-Photon vertex
-
-  HepMC::GenVertex *gammapomvtx = new HepMC::GenVertex(CLHEP::HepLorentzVector(0.0, 0.0, 0.0, 0.0));
-  genevent->add_vertex(gammapomvtx);
-
-  gammapomvtx->add_particle_in(hgamma);
-  gammapomvtx->add_particle_in(hPomOut);
-
-  int isVMFinal = 1;
+  // Photon Pomeron
+  
+  int isVMFinal = 3;
   if (doPerformDecay) isVMFinal = 2;
 
-  HepMC::GenParticle *hvm = new HepMC::GenParticle(CLHEP::HepLorentzVector(vm->Px(),
-                                                                           vm->Py(),
-                                                                           vm->Pz(),
-                                                                           vm->E()),
-                                                   event->particles[4].pdgId,
-                                                   isVMFinal);
-
-  gammapomvtx->add_particle_out(hvm);
+  particle_px.push_back(vm->Px());
+  particle_py.push_back(vm->Py());
+  particle_pz.push_back(vm->Pz());
+  particle_E.push_back(vm->E());
+  particle_theta.push_back(vm->Theta());
+  particle_phi.push_back(vm->Phi());
+  particle_eta.push_back(vm->Eta());
+  particle_id.push_back(event->particles[4].pdgId);
+  particle_status.push_back(isVMFinal);
 
   // Add the VM decay to the event
 
@@ -425,31 +432,33 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   {
     if (vmDecay1 && vmDecay2)
     {
-      HepMC::GenVertex *fvtx = new HepMC::GenVertex(CLHEP::HepLorentzVector(0.0, 0.0, 0.0, 0.0));
-      genevent->add_vertex(fvtx);
+       particle_px.push_back(vmDecay1->Px());
+       particle_py.push_back(vmDecay1->Py());
+       particle_pz.push_back(vmDecay1->Pz());
+       particle_E.push_back(vmDecay1->E());
+       particle_theta.push_back(vmDecay1->Theta());
+       particle_phi.push_back(vmDecay1->Phi());
+       particle_eta.push_back(vmDecay1->Eta());
+       particle_id.push_back(daughterID);
+       particle_status.push_back(3);
 
-      fvtx->add_particle_in(hvm);
-
-      fvtx->add_particle_out(
-          new HepMC::GenParticle(CLHEP::HepLorentzVector(vmDecay1->Px(),
-                                                         vmDecay1->Py(),
-                                                         vmDecay1->Pz(),
-                                                         vmDecay1->E()),
-                                 daughterID,
-                                 1));
-      fvtx->add_particle_out(
-          new HepMC::GenParticle(CLHEP::HepLorentzVector(vmDecay2->Px(),
-                                                         vmDecay2->Py(),
-                                                         vmDecay2->Pz(),
-                                                         vmDecay2->E()),
-                                 -daughterID,
-                                 1));
+       particle_px.push_back(vmDecay2->Px());
+       particle_py.push_back(vmDecay2->Py());
+       particle_pz.push_back(vmDecay2->Pz());
+       particle_E.push_back(vmDecay2->E());
+       particle_theta.push_back(vmDecay2->Theta());
+       particle_phi.push_back(vmDecay2->Phi());
+       particle_eta.push_back(vmDecay2->Eta());
+       particle_id.push_back(-daughterID);
+       particle_status.push_back(3);
     }
     else
     {
       cout << "PHSartre: WARNING: Kinematics of Vector Meson does not allow decay!" << endl;
     }
 
+    /* copy down cross section */
+    cross_section = _sartre->totalCrossSection();
     /* fill event information tree */
     _outTree->Fill();
   }

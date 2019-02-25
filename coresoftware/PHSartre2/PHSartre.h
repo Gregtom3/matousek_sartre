@@ -143,6 +143,22 @@ class PHSartre : public SubsysReco
 
   /* Output Tree */
   TTree *_outTree;
+
+  /* Output Tree Branch Variables */
+  float event_x;
+  float event_Q2;
+  float event_W;
+  float event_t;
+  float event_y;
+  float event_s;
+  
+  float cross_section;
+
+  std::vector<Double_t> particle_px, particle_py, particle_pz, particle_id, particle_E;
+  std::vector<Double_t> particle_theta, particle_phi, particle_eta;
+  std::vector<int> particle_status;
+
+  // particle_status -> 0=Beam In, 1=Beam Out, 2=Decaying, 3=Final State, 4=Other
 };
 
 #endif /* __PHSARTRE_H__ */
