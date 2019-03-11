@@ -107,7 +107,7 @@ int PHSartre::Init(PHCompositeNode *topNode)
   _tfile = new TFile(_filename.c_str(), "RECREATE");
   myfile.open("example.txt");
   
-   myfile << "SARTRE\n============================================\nI, ievent, linesnum, weight, genprocess, radcorr,        truex, trueQ2, truey, truet, treuphi, phibelgen, phibelres,       phibelrec\n============================================\nI, K(I,1)  K(I,2)  K(I,3)  K(I,4)  K(I,5)             P(I,1)  P(I,2)  P(I,3)  P(I,4)  P(I,5) V(I,1)  V(I,2)  V(I,3)\n============================================\n";
+   myfile << "PYTHIA EVENT FILE\n============================================\nI, ievent, genevent, subprocess, nucleon, targetparton, xtargparton, beamparton, xbeamparton, thetabeamparton, truey, trueQ2, truex, trueW2, trueNu, leptonphi, s_hat, t_hat, u_hat, pt2_hat, Q2_hat, F2, F1, R, sigma_rad, SigRadCor, EBrems, photonflux, nrTracks\n============================================\nI, K(I,1)  K(I,2)  K(I,3)  K(I,4)  K(I,5)             P(I,1)  P(I,2)  P(I,3)  P(I,4)  P(I,5) V(I,1)  V(I,2)  V(I,3)\n============================================\n";
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -288,22 +288,25 @@ int PHSartre::process_event(PHCompositeNode *topNode)
 
   // add some information to the event
   genevent->set_event_number(_eventcount);
-  myfile << "0";
+  myfile << "0"; // I
+  myfile << "\t"; 
+  myfile << _eventcount; // ievent
+  myfile << "\t"; 
+  myfile << "1"; //genevent
   myfile << "\t";
-  myfile << _eventcount;
+  myfile << "0\t 0\t 0\t 0\t 0\t 0\t 0\t"; //subprocess
+  myfile << event->y; //truey
   myfile << "\t";
-  myfile << preVMDecaySize;
+  myfile << event->Q2; //trueQ2
   myfile << "\t";
-  myfile << "1.00000000\t 2\t 0\t";
-  myfile << event->x;
+  myfile << event->x; //truex
   myfile << "\t";
-  myfile << event->Q2;
+  myfile << event->W; //trueW
+  myfile << "\t 0\t 0.1\t"; //trueNu
+  myfile << event->s; //trueS
   myfile << "\t";
-  myfile << event->y;
-  myfile << "\t";
-  myfile << event->t;
-  myfile << "\t";
-  myfile << "0 \t 0\t 0\t 0\n";
+  myfile << event->t; //trueT
+  myfile << "\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t\n";
   myfile << "============================================\n";
 
   
@@ -319,7 +322,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   myfile << "1\t"; //I
   myfile << "1\t"; //Status
   myfile << "11\t"; //PDG
-  myfile << "0\t 0\t 0\t"; //Bogus
+  myfile << "3\t 0\t 0\t"; //Bogus
   myfile << eIn->Px(); //Px
   myfile << "\t"; 
   myfile << eIn->Py(); //Py
@@ -402,7 +405,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
       if (event->particles[iParticle].status == 1)
       {
 	const Particle &particle = event->particles[iParticle];
-	myfile << iParticle;
+	myfile << iParticle+3;
 	myfile << "\t";
 	myfile << "3\t";
 	myfile << particle.pdgId;
@@ -424,6 +427,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   }
   else
     {
+      //Outgoing Proton
        myfile << "6\t";
        myfile << "3\t";
        myfile << "2212";
@@ -440,46 +444,57 @@ int PHSartre::process_event(PHCompositeNode *topNode)
        myfile << "\t 0\t 0\t 0\n";
   }
 
-  // Photon Pomeron
-  
-  //int isVMFinal = 3;
-  //if (doPerformDecay) isVMFinal = 2;
-
-  /*particle_px.push_back(vm->Px());
-  particle_py.push_back(vm->Py());
-  particle_pz.push_back(vm->Pz());
-  particle_E.push_back(vm->E());
-  particle_theta.push_back(vm->Theta());
-  particle_phi.push_back(vm->Phi());
-  particle_eta.push_back(vm->Eta());
-  particle_id.push_back(event->particles[4].pdgId);
-  particle_status.push_back(isVMFinal);*/
+  // VM
+  myfile << "7\t";
+  myfile << "2\t";
+  myfile << event->particles[4].pdgId;
+  myfile << "\t 0\t 0\t 0\t";
+  myfile << vm->Px();
+  myfile << "\t";
+  myfile << vm->Py();
+  myfile << "\t";
+  myfile << vm->Pz();
+  myfile << "\t";
+  myfile << vm->E();
+  myfile << "\t";
+  myfile << vm->M();
+  myfile << "\t 0\t 0\t 0\n";
 
   // Add the VM decay to the event
 
   if (doPerformDecay)
   {
     if (vmDecay1 && vmDecay2)
-    {
-      /* particle_px.push_back(vmDecay1->Px());
-       particle_py.push_back(vmDecay1->Py());
-       particle_pz.push_back(vmDecay1->Pz());
-       particle_E.push_back(vmDecay1->E());
-       particle_theta.push_back(vmDecay1->Theta());
-       particle_phi.push_back(vmDecay1->Phi());
-       particle_eta.push_back(vmDecay1->Eta());
-       particle_id.push_back(daughterID);
-       particle_status.push_back(3);
+      {
+	myfile << "8\t";
+	myfile << "4\t";
+	myfile << daughterID;
+	myfile << "\t 0\t 0\t 0\t";
+	myfile << vmDecay1->Px();
+	myfile << "\t";
+	myfile << vmDecay1->Py();
+	myfile << "\t";
+	myfile << vmDecay1->Pz();
+	myfile << "\t";
+	myfile << vmDecay1->E();
+	myfile << "\t";
+	myfile << vmDecay1->M();
+	myfile << "\t 0\t 0\t 0\n";
 
-       particle_px.push_back(vmDecay2->Px());
-       particle_py.push_back(vmDecay2->Py());
-       particle_pz.push_back(vmDecay2->Pz());
-       particle_E.push_back(vmDecay2->E());
-       particle_theta.push_back(vmDecay2->Theta());
-       particle_phi.push_back(vmDecay2->Phi());
-       particle_eta.push_back(vmDecay2->Eta());
-       particle_id.push_back(-daughterID);
-       particle_status.push_back(3);*/
+	myfile << "9\t";
+	myfile << "4\t";
+	myfile << -daughterID;
+	myfile << "\t 0\t 0\t 0\t";
+	myfile << vmDecay2->Px();
+	myfile << "\t";
+	myfile << vmDecay2->Py();
+	myfile << "\t";
+	myfile << vmDecay2->Pz();
+	myfile << "\t";
+	myfile << vmDecay2->E();
+	myfile << "\t";
+	myfile << vmDecay2->M();
+	myfile << "\t 0\t 0\t 0\n";
     }
     else
     {
