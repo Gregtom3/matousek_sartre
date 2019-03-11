@@ -105,7 +105,8 @@ int PHSartre::Init(PHCompositeNode *topNode)
   }
 
   _tfile = new TFile(_filename.c_str(), "RECREATE");
-  myfile.open("example.txt");
+  TString eictreeout = "eictree_" + TString(_filename.c_str());
+  myfile.open(eictreeout);
   
    myfile << "PYTHIA EVENT FILE\n============================================\nI, ievent, genevent, subprocess, nucleon, targetparton, xtargparton, beamparton, xbeamparton, thetabeamparton, truey, trueQ2, truex, trueW2, trueNu, leptonphi, s_hat, t_hat, u_hat, pt2_hat, Q2_hat, F2, F1, R, sigma_rad, SigRadCor, EBrems, photonflux, nrTracks\n============================================\nI, K(I,1)  K(I,2)  K(I,3)  K(I,4)  K(I,5)             P(I,1)  P(I,2)  P(I,3)  P(I,4)  P(I,5) V(I,1)  V(I,2)  V(I,3)\n============================================\n";
 
