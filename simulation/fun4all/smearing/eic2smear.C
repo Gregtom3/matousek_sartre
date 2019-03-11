@@ -1,0 +1,65 @@
+#include "eic2smear.h"
+/* STL includes */
+#include <cassert>
+
+/* Fun4All includes */
+
+#include <phool/getClass.h>
+
+#include <fun4all/Fun4AllReturnCodes.h>
+
+
+
+/* ROOT includes */
+#include <TString.h>
+#include <TTree.h>
+#include <TFile.h>
+
+using namespace std;
+
+eic2smear::eic2smear(std::string filename) :
+  SubsysReco("eic2smear" ),
+  _save_towers(false),
+  _save_tracks(false),
+  _ievent(0),
+  _filename(filename),
+  _tfile(nullptr)
+{
+
+}
+
+int
+eic2smear::Init(PHCompositeNode *topNode)
+{
+  _topNode = topNode;
+
+  _ievent = 0;
+
+  _tfile = new TFile(_filename.c_str(), "RECREATE");
+  
+  return 0;
+}
+
+int
+eic2smear::InitRun(PHCompositeNode *topNode)
+{
+   return 0;
+}
+
+int
+eic2smear::process_event(PHCompositeNode *topNode)
+{
+  /* count up event number */
+  _ievent ++;
+
+  return 0;
+}
+
+
+int
+eic2smear::End(PHCompositeNode *topNode)
+{
+ 
+
+  return 0;
+}
