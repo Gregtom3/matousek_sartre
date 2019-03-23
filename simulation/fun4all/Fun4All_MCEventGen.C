@@ -1,7 +1,7 @@
 #include <stdio.h>
 int Fun4All_MCEventGen(
-                       const int nEvents = 1,
-                       const char * outputFileRaw = "test"
+                       const int nEvents = 1000,
+                       const char * outputFileRaw = "1k_test"
                        )
 {
   //===============
@@ -15,7 +15,7 @@ int Fun4All_MCEventGen(
   const bool convert_2_eictree = true;
  
   // Setting Strings
-  TString outputFileText = TString(outputFileRaw) + ".txt";
+  TString outputFileText = TString(outputFileRaw) + ".root";
   TString outputFileEICTree = "eictree_" + TString(outputFileRaw) + ".txt";
   TString outputFileEICSmear = "eictree_" + TString(outputFileRaw) + ".root";
 
@@ -26,8 +26,8 @@ int Fun4All_MCEventGen(
   //---------------
   gSystem->Load("libfun4all.so");
   gSystem->Load("libphhepmc.so");
-  //gSystem->Load("libg4detectors.so");
-  //gSystem->Load("libg4eval.so");
+  gSystem->Load("libg4detectors.so");
+  gSystem->Load("libg4eval.so");
 
   //---------------
   // Fun4All server
@@ -59,7 +59,7 @@ int Fun4All_MCEventGen(
       // setenv SARTRE_DIR /opt/sphenix/core/sartre-1.20_root-5.34.36
       gSystem->Load("libPHSartre.so");
 
-      PHSartre* mysartre = new PHSartre(outputFileText.Data());
+      PHSartre* mysartre = new PHSartre(outputFileRaw);
       // see coresoftware/generators/PHSartre for example config
       mysartre->set_config_file("sartre.cfg");
 
@@ -110,9 +110,18 @@ int Fun4All_MCEventGen(
       gROOT->LoadMacro("eic_sphenix.C");
 
       SmearTree(BuildEicSphenix(), outputFileEICSmear);
+      
+      // put cross section into relevant tfile
+      TFile *inputf=new TFile(outputFileText,"OPEN");
+      TVectorD *v = (TVectorD*)inputf->Get("xsec");
+      inputf->Close();
+      TFile *outputf=new TFile(outputFileEICSmear,"UPDATE");
+      v->Write("xsec");
+      outputf->Close();
 
+      std::remove(outputFileText);
       std::remove(outputFileEICTree);
-      //removeFile(outputFileEICTree);
+      
 
       gSystem->Exit(0);
     }

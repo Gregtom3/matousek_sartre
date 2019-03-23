@@ -11,7 +11,7 @@
 #include <sartre/Sartre.h>
 
 #include <TGenPhaseSpace.h>
-
+#include <TVectorD.h>
 #include <CLHEP/Vector/LorentzVector.h>
 
 #include <HepMC/GenEvent.h>
@@ -104,8 +104,8 @@ int PHSartre::Init(PHCompositeNode *topNode)
     cout << endl;
   }
 
-  _tfile = new TFile(_filename.c_str(), "RECREATE");
-  TString eictreeout = "eictree_" + TString(_filename.c_str());
+  _tfile = new TFile(TString(_filename.c_str())+".root", "RECREATE");
+  TString eictreeout = "eictree_" + TString(_filename.c_str())+".txt";
   myfile.open(eictreeout);
   
    myfile << "PYTHIA EVENT FILE\n============================================\nI, ievent, genevent, subprocess, nucleon, targetparton, xtargparton, beamparton, xbeamparton, thetabeamparton, truey, trueQ2, truex, trueW2, trueNu, leptonphi, s_hat, t_hat, u_hat, pt2_hat, Q2_hat, F2, F1, R, sigma_rad, SigRadCor, EBrems, photonflux, nrTracks\n============================================\nI, K(I,1)  K(I,2)  K(I,3)  K(I,4)  K(I,5)             P(I,1)  P(I,2)  P(I,3)  P(I,4)  P(I,5) V(I,1)  V(I,2)  V(I,3)\n============================================\n";
@@ -134,6 +134,9 @@ int PHSartre::End(PHCompositeNode *topNode)
        << "-------------------------------------------------* " << endl;
 
   _tfile->cd();
+  TVectorD xsection(1);
+  xsection[0]=_sartre->totalCrossSection();
+  xsection.Write("xsec");
   myfile.close();
   _tfile->Close();
   return Fun4AllReturnCodes::EVENT_OK;
@@ -321,9 +324,9 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   /* Push back initial particle vectors */
   // eIn
   myfile << "1\t"; //I
-  myfile << "1\t"; //Status
+  myfile << "21\t"; //Status (21 for beam)
   myfile << "11\t"; //PDG
-  myfile << "3\t 0\t 0\t"; //Bogus
+  myfile << "0\t 0\t 0\t"; //Bogus
   myfile << eIn->Px(); //Px
   myfile << "\t"; 
   myfile << eIn->Py(); //Py
@@ -336,7 +339,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   myfile << "\t 0\t 0\t 0\n"; //Vertex
   // pIn
   myfile << "2\t";
-  myfile << "1\t";
+  myfile << "21\t"; // (21 for beam)
   myfile << "2212\t";
   myfile << "0\t 0\t 0\t";
   myfile << pIn->Px();
@@ -351,7 +354,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   myfile << "\t 0\t 0\t 0\n";
   // gamma
   myfile << "3\t";
-  myfile << "2\t";
+  myfile << "21\t"; 
   myfile << "22\t";
   myfile << "0\t 0\t 0\t";
   myfile << gamma->Px();
@@ -366,9 +369,9 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   myfile << "\t 0\t 0\t 0\n";
   // eOut
   myfile << "4\t";
-  myfile << "3\t";
+  myfile << "1\t";
   myfile << "11\t";
-  myfile << "0\t 0\t 0\t";
+  myfile << "3\t 0\t 0\t"; // 3 for scattered lepton
   myfile << eOut->Px();
   myfile << "\t";
   myfile << eOut->Py();
@@ -502,7 +505,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
       cout << "PHSartre: WARNING: Kinematics of Vector Meson does not allow decay!" << endl;
     }
     myfile<<" =============== Event finished =============== \n";
-    if (_eventcount%100==0)
+    if (_eventcount%1000==0)
       cout << _eventcount << " total events completed" << endl;
     /* copy down cross section */
     //cross_section = _sartre->totalCrossSection();

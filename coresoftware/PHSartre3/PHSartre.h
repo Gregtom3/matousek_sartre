@@ -12,7 +12,6 @@
 #include "TFile.h"
 #include "TTree.h"
 
-
 class PHCompositeNode;
 class PHHepMCGenEvent;
 class PHHepMCFilter;
@@ -141,7 +140,7 @@ class PHSartre : public SubsysReco
   std::string _filename;
   TFile *_tfile;
 
-  ofstream myfile;
+  std::ofstream myfile;
 };
 
 #endif /* __PHSARTRE_H__ */
