@@ -81,6 +81,8 @@ int true_reco_particle_eta_plots(
 
   double true_decayed_positron_px, true_decayed_positron_py, true_decayed_positron_pz, true_decayed_positron_pt, true_decayed_positron_p, true_decayed_positron_phi, true_decayed_positron_theta, true_decayed_positron_eta, true_decayed_positron_id;
 
+  /* Outgoing Nuclear Breakup Particles */
+  std::vector<double> true_breakup_px, true_breakup_py, true_breakup_pz, true_breakup_pt, true_breakup_p, true_breakup_phi, true_breakup_theta, true_breakup_eta, true_breakup_id;
   //----------------------------------------------------------------------------
   // Reco Event-Wise Variables
   //----------------------------------------------------------------------------
@@ -93,6 +95,22 @@ int true_reco_particle_eta_plots(
   //----------------------------------------------------------------------------
   // Reco Particle Info
   //----------------------------------------------------------------------------
+
+  /* Incoming Beam Particles */
+  double reco_beam_lepton_px, reco_beam_lepton_py, reco_beam_lepton_pz, reco_beam_lepton_pt, reco_beam_lepton_p, reco_beam_lepton_phi, reco_beam_lepton_theta, reco_beam_lepton_eta, reco_beam_lepton_id;
+
+  double reco_beam_hadron_px, reco_beam_hadron_py, reco_beam_hadron_pz, reco_beam_hadron_pt, reco_beam_hadron_p, reco_beam_hadron_phi, reco_beam_hadron_theta, reco_beam_hadron_eta, reco_beam_hadron_id;
+
+  /* Outgoing Scattered Particles */
+  double reco_scattered_lepton_px, reco_scattered_lepton_py, reco_scattered_lepton_pz, reco_scattered_lepton_pt, reco_scattered_lepton_p, reco_scattered_lepton_phi, reco_scattered_lepton_theta, reco_scattered_lepton_eta, reco_scattered_lepton_id;
+
+  double reco_scattered_hadron_px, reco_scattered_hadron_py, reco_scattered_hadron_pz, reco_scattered_hadron_pt, reco_scattered_hadron_p, reco_scattered_hadron_phi, reco_scattered_hadron_theta, reco_scattered_hadron_eta, reco_scattered_hadron_id;
+
+  /* Outgoing Vector Meson Particles */
+  
+  double reco_decayed_electron_px, reco_decayed_electron_py, reco_decayed_electron_pz, reco_decayed_electron_pt, reco_decayed_electron_p, reco_decayed_electron_phi, reco_decayed_electron_theta, reco_decayed_electron_eta, reco_decayed_electron_id;
+
+  double reco_decayed_positron_px, reco_decayed_positron_py, reco_decayed_positron_pz, reco_decayed_positron_pt, reco_decayed_positron_p, reco_decayed_positron_phi, reco_decayed_positron_theta, reco_decayed_positron_eta, reco_decayed_positron_id;
 
   //----------------------------------------------------------------------------
   // True Tree Branching
@@ -164,6 +182,16 @@ int true_reco_particle_eta_plots(
   out_tree->Branch("true_decayed_positron_theta",&true_decayed_positron_theta);
   out_tree->Branch("true_decayed_positron_eta",&true_decayed_positron_eta);
   out_tree->Branch("true_decayed_positron_id",&true_decayed_positron_id);
+
+  out_tree->Branch("true_breakup_px",&true_breakup_px);
+  out_tree->Branch("true_breakup_py",&true_breakup_py);
+  out_tree->Branch("true_breakup_pz",&true_breakup_pz);
+  out_tree->Branch("true_breakup_pt",&true_breakup_pt);
+  out_tree->Branch("true_breakup_p",&true_breakup_p);
+  out_tree->Branch("true_breakup_phi",&true_breakup_phi);
+  out_tree->Branch("true_breakup_theta",&true_breakup_theta);
+  out_tree->Branch("true_breakup_eta",&true_breakup_eta);
+  out_tree->Branch("true_breakup_id",&true_breakup_id);
 
   //----------------------------------------------------------------------------
   // Reco Tree Branching
@@ -250,76 +278,74 @@ int true_reco_particle_eta_plots(
 
       unsigned ntracks = eventS->GetNTracks();
       
-      for ( unsigned itrack = 0; itrack < ntracks; itrack++ )
-        {
-          Smear::ParticleMCS * sparticle = eventS->GetTrack( itrack );
-	  erhic::ParticleMC * tparticle = event->GetTrack(itrack);
+      // Assume all Smeared Particles are not findable
+       reco_beam_lepton_px=NULL;
+       reco_beam_lepton_py=NULL;
+       reco_beam_lepton_pz=NULL;
+       reco_beam_lepton_pt=NULL;
+       reco_beam_lepton_p=NULL;
+       reco_beam_lepton_phi=NULL;
+       reco_beam_lepton_theta=NULL;
+       reco_beam_lepton_eta=NULL;
+       reco_beam_lepton_id=NULL;
+       
+       reco_beam_hadron_px=NULL;
+       reco_beam_hadron_py=NULL;
+       reco_beam_hadron_pz=NULL;
+       reco_beam_hadron_pt=NULL;
+       reco_beam_hadron_p=NULL;
+       reco_beam_hadron_phi=NULL;
+       reco_beam_hadron_theta=NULL;
+       reco_beam_hadron_eta=NULL;
+       reco_beam_hadron_id=NULL;
+       
+       reco_scattered_lepton_px=NULL;
+       reco_scattered_lepton_py=NULL;
+       reco_scattered_lepton_pz=NULL;
+       reco_scattered_lepton_pt=NULL;
+       reco_scattered_lepton_p=NULL;
+       reco_scattered_lepton_phi=NULL;
+       reco_scattered_lepton_theta=NULL;
+       reco_scattered_lepton_eta=NULL;
+       reco_scattered_lepton_id=NULL;
+       
+       reco_scattered_hadron_px=NULL;
+       reco_scattered_hadron_py=NULL;
+       reco_scattered_hadron_pz=NULL;
+       reco_scattered_hadron_pt=NULL;
+       reco_scattered_hadron_p=NULL;
+       reco_scattered_hadron_phi=NULL;
+       reco_scattered_hadron_theta=NULL;
+       reco_scattered_hadron_eta=NULL;
+       reco_scattered_hadron_id=NULL;
+       
+       reco_decayed_electron_px=NULL;
+       reco_decayed_electron_py=NULL;
+       reco_decayed_electron_pz=NULL;
+       reco_decayed_electron_pt=NULL;
+       reco_decayed_electron_p=NULL;
+       reco_decayed_electron_phi=NULL;
+       reco_decayed_electron_theta=NULL;
+       reco_decayed_electron_eta=NULL;
+       reco_decayed_electron_id=NULL;
+       
+       reco_decayed_positron_px=NULL;
+       reco_decayed_positron_py=NULL;
+       reco_decayed_positron_pz=NULL;
+       reco_decayed_positron_pt=NULL;
+       reco_decayed_positron_p=NULL;
+       reco_decayed_positron_phi=NULL;
+       reco_decayed_positron_theta=NULL;
+       reco_decayed_positron_eta=NULL;
+       reco_decayed_positron_id=NULL;
+       
+       for ( unsigned itrack = 0; itrack < ntracks; itrack++ )
+	 {
+	   Smear::ParticleMCS * sparticle = eventS->GetTrack( itrack );
+	   erhic::ParticleMC * tparticle = event->GetTrack(itrack);
 
 	  // Quick test to see if the particle was smeared
 	  bool is_smeared = (sparticle!=NULL);
-	  if(!is_smeared)
-	    {
-	      reco_beam_lepton_px=NULL;
-	      reco_beam_lepton_py=NULL;
-	      reco_beam_lepton_pz=NULL;
-	      reco_beam_lepton_pt=NULL;
-	      reco_beam_lepton_p=NULL;
-	      reco_beam_lepton_phi=NULL;
-	      reco_beam_lepton_theta=NULL;
-	      reco_beam_lepton_eta=NULL;
-	      reco_beam_lepton_id=NULL;
-
-	      reco_beam_hadron_px=NULL;
-	      reco_beam_hadron_py=NULL;
-	      reco_beam_hadron_pz=NULL;
-	      reco_beam_hadron_pt=NULL;
-	      reco_beam_hadron_p=NULL;
-	      reco_beam_hadron_phi=NULL;
-	      reco_beam_hadron_theta=NULL;
-	      reco_beam_hadron_eta=NULL;
-	      reco_beam_hadron_id=NULL;
-
-	      reco_scattered_lepton_px=NULL;
-	      reco_scattered_lepton_py=NULL;
-	      reco_scattered_lepton_pz=NULL;
-	      reco_scattered_lepton_pt=NULL;
-	      reco_scattered_lepton_p=NULL;
-	      reco_scattered_lepton_phi=NULL;
-	      reco_scattered_lepton_theta=NULL;
-	      reco_scattered_lepton_eta=NULL;
-	      reco_scattered_lepton_id=NULL;
-
-	      reco_scattered_hadron_px=NULL;
-	      reco_scattered_hadron_py=NULL;
-	      reco_scattered_hadron_pz=NULL;
-	      reco_scattered_hadron_pt=NULL;
-	      reco_scattered_hadron_p=NULL;
-	      reco_scattered_hadron_phi=NULL;
-	      reco_scattered_hadron_theta=NULL;
-	      reco_scattered_hadron_eta=NULL;
-	      reco_scattered_hadron_id=NULL;
-
-	      reco_decayed_electron_px=NULL;
-	      reco_decayed_electron_py=NULL;
-	      reco_decayed_electron_pz=NULL;
-	      reco_decayed_electron_pt=NULL;
-	      reco_decayed_electron_p=NULL;
-	      reco_decayed_electron_phi=NULL;
-	      reco_decayed_electron_theta=NULL;
-	      reco_decayed_electron_eta=NULL;
-	      reco_decayed_electron_id=NULL;
-
-	      reco_decayed_positron_px=NULL;
-	      reco_decayed_positron_py=NULL;
-	      reco_decayed_positron_pz=NULL;
-	      reco_decayed_positron_pt=NULL;
-	      reco_decayed_positron_p=NULL;
-	      reco_decayed_positron_phi=NULL;
-	      reco_decayed_positron_theta=NULL;
-	      reco_decayed_positron_eta=NULL;
-	      reco_decayed_positron_id=NULL;
-
-	    }
 
 	  /* -------------------------------------
 	     Particle Searching Using Truth Info
@@ -341,6 +367,21 @@ int true_reco_particle_eta_plots(
 	      // Fill Smeared Particle Info if Particle is Found
 	      if(is_smeared)
 		{
+		  reco_beam_lepton_px=sparticle->GetPx();
+		  reco_beam_lepton_py=sparticle->GetPy();
+		  reco_beam_lepton_pz=sparticle->GetPz();
+		  reco_beam_lepton_pt=sparticle->GetPt();
+		  reco_beam_lepton_p=sparticle->GetP();
+		  reco_beam_lepton_phi=atan(reco_beam_lepton_py/reco_beam_lepton_px);
+		  reco_beam_lepton_theta=atan(reco_beam_lepton_pt/reco_beam_lepton_pz);
+		  if(reco_beam_lepton_theta>0)
+		    {
+		      reco_beam_lepton_eta=-log((tan(reco_beam_lepton_theta/2)));
+		    }
+		  else
+		    {
+		      reco_beam_lepton_eta=-log(-(tan(reco_beam_lepton_theta/2)));
+		    }
 		}
 	    }
 
@@ -360,6 +401,21 @@ int true_reco_particle_eta_plots(
 	      // Fill Smeared Particle Info if Particle is Found
 	      if(is_smeared)
 		{
+		  reco_beam_hadron_px=sparticle->GetPx();
+		  reco_beam_hadron_py=sparticle->GetPy();
+		  reco_beam_hadron_pz=sparticle->GetPz();
+		  reco_beam_hadron_pt=sparticle->GetPt();
+		  reco_beam_hadron_p=sparticle->GetP();
+		  reco_beam_hadron_phi=atan(reco_beam_hadron_py/reco_beam_hadron_px);
+		  reco_beam_hadron_theta=atan(reco_beam_hadron_pt/reco_beam_hadron_pz);
+		  if(reco_beam_hadron_theta>0)
+		    {
+		      reco_beam_hadron_eta=-log((tan(reco_beam_hadron_theta/2)));
+		    }
+		  else
+		    {
+		      reco_beam_hadron_eta=-log(-(tan(reco_beam_hadron_theta/2)));
+		    }
 		}
 	    }
 
@@ -379,6 +435,21 @@ int true_reco_particle_eta_plots(
 	      // Fill Smeared Particle Info if Particle is Found
 	      if(is_smeared)
 		{
+		  reco_scattered_lepton_px=sparticle->GetPx();
+		  reco_scattered_lepton_py=sparticle->GetPy();
+		  reco_scattered_lepton_pz=sparticle->GetPz();
+		  reco_scattered_lepton_pt=sparticle->GetPt();
+		  reco_scattered_lepton_p=sparticle->GetP();
+		  reco_scattered_lepton_phi=atan(reco_scattered_lepton_py/reco_scattered_lepton_px);
+		  reco_scattered_lepton_theta=atan(reco_scattered_lepton_pt/reco_scattered_lepton_pz);
+		  if(reco_scattered_lepton_theta>0)
+		    {
+		      reco_scattered_lepton_eta=-log((tan(reco_scattered_lepton_theta/2)));
+		    }
+		  else
+		    {
+		      reco_scattered_lepton_eta=-log(-(tan(reco_scattered_lepton_theta/2)));
+		    }
 		}
 	    }
 
@@ -398,6 +469,21 @@ int true_reco_particle_eta_plots(
 	      // Fill Smeared Particle Info if Particle is Found
 	      if(is_smeared)
 		{
+		  reco_scattered_hadron_px=sparticle->GetPx();
+		  reco_scattered_hadron_py=sparticle->GetPy();
+		  reco_scattered_hadron_pz=sparticle->GetPz();
+		  reco_scattered_hadron_pt=sparticle->GetPt();
+		  reco_scattered_hadron_p=sparticle->GetP();
+		  reco_scattered_hadron_phi=atan(reco_scattered_hadron_py/reco_scattered_hadron_px);
+		  reco_scattered_hadron_theta=atan(reco_scattered_hadron_pt/reco_scattered_hadron_pz);
+		  if(reco_scattered_hadron_theta>0)
+		    {
+		      reco_scattered_hadron_eta=-log((tan(reco_scattered_hadron_theta/2)));
+		    }
+		  else
+		    {
+		      reco_scattered_hadron_eta=-log(-(tan(reco_scattered_hadron_theta/2)));
+		    }
 		}
 	    }
 
@@ -417,6 +503,21 @@ int true_reco_particle_eta_plots(
 	      // Fill Smeared Particle Info if Particle is Found
 	      if(is_smeared)
 		{
+		  reco_decayed_electron_px=sparticle->GetPx();
+		  reco_decayed_electron_py=sparticle->GetPy();
+		  reco_decayed_electron_pz=sparticle->GetPz();
+		  reco_decayed_electron_pt=sparticle->GetPt();
+		  reco_decayed_electron_p=sparticle->GetP();
+		  reco_decayed_electron_phi=atan(reco_decayed_electron_py/reco_decayed_electron_px);
+		  reco_decayed_electron_theta=atan(reco_decayed_electron_pt/reco_decayed_electron_pz);
+		  if(reco_decayed_electron_theta>0)
+		    {
+		      reco_decayed_electron_eta=-log((tan(reco_decayed_electron_theta/2)));
+		    }
+		  else
+		    {
+		      reco_decayed_electron_eta=-log(-(tan(reco_decayed_electron_theta/2)));
+		    }
 		}
 	    }
 
@@ -436,11 +537,39 @@ int true_reco_particle_eta_plots(
 	      // Fill Smeared Particle Info if Particle is Found
 	      if(is_smeared)
 		{
+		  reco_decayed_positron_px=sparticle->GetPx();
+		  reco_decayed_positron_py=sparticle->GetPy();
+		  reco_decayed_positron_pz=sparticle->GetPz();
+		  reco_decayed_positron_pt=sparticle->GetPt();
+		  reco_decayed_positron_p=sparticle->GetP();
+		  reco_decayed_positron_phi=atan(reco_decayed_positron_py/reco_decayed_positron_px);
+		  reco_decayed_positron_theta=atan(reco_decayed_positron_pt/reco_decayed_positron_pz);
+		  if(reco_decayed_positron_theta>0)
+		    {
+		      reco_decayed_positron_eta=-log((tan(reco_decayed_positron_theta/2)));
+		    }
+		  else
+		    {
+		      reco_decayed_positron_eta=-log(-(tan(reco_decayed_positron_theta/2)));
+		    }
 		}
 	    }
-	  /* Search for Type of Particle Using Reco Information */
-	}
 
+	  // Nuclear BreakUp Particles (PHSartre3 refers to their parentindex as 5 for their identification at THIS step
+	  if(tparticle->GetParentIndex()==5)
+	    {
+	      true_breakup_px.push_back(tparticle->GetPx());
+	      true_breakup_py.push_back(tparticle->GetPy());
+	      true_breakup_pz.push_back(tparticle->GetPz());
+	      true_breakup_pt.push_back(tparticle->GetPt());
+	      true_breakup_p.push_back(tparticle->GetP());
+	      true_breakup_phi.push_back(tparticle->GetPhi());
+	      true_breakup_theta.push_back(tparticle->GetTheta());
+	      true_breakup_eta.push_back(tparticle->GetEta());
+	      true_breakup_id.push_back(tparticle->Id().Code());
+	    }
+	}
+      
       /* Record True Event Info */
       true_x=event->GetTrueX();
       true_y=event->GetTrueY();
