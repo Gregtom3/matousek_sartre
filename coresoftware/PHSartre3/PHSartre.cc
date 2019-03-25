@@ -105,7 +105,7 @@ int PHSartre::Init(PHCompositeNode *topNode)
   }
 
   _tfile = new TFile(TString(_filename.c_str())+".root", "RECREATE");
-  TString eictreeout = "eictree_" + TString(_filename.c_str())+".txt";
+  TString eictreeout =  TString(_filename.c_str())+"_eictree.txt";
   myfile.open(eictreeout);
   
    myfile << "PYTHIA EVENT FILE\n============================================\nI, ievent, genevent, subprocess, nucleon, targetparton, xtargparton, beamparton, xbeamparton, thetabeamparton, truey, trueQ2, truex, trueW2, trueNu, leptonphi, s_hat, t_hat, u_hat, pt2_hat, Q2_hat, F2, F1, R, sigma_rad, SigRadCor, EBrems, photonflux, nrTracks\n============================================\nI, K(I,1)  K(I,2)  K(I,3)  K(I,4)  K(I,5)             P(I,1)  P(I,2)  P(I,3)  P(I,4)  P(I,5) V(I,1)  V(I,2)  V(I,3)\n============================================\n";
@@ -408,13 +408,15 @@ int PHSartre::process_event(PHCompositeNode *topNode)
     {
       if (event->particles[iParticle].status == 1)
       {
+
+	// I am giving these particles a status of '5' to denote them for later analysis modules //
 	const Particle &particle = event->particles[iParticle];
 	myfile << iParticle+3;
 	myfile << "\t";
-	myfile << "3\t";
+	myfile << "1\t";
 	myfile << particle.pdgId;
 	myfile << "\t";
-	myfile << "0\t 0\t 0\t";
+	myfile << "5\t 0\t 0\t";
 	myfile << particle.p.Px();
 	myfile << "\t";
 	myfile << particle.p.Py();
@@ -431,11 +433,11 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   }
   else
     {
-      //Outgoing Proton
+      //Outgoing Hadron
        myfile << "6\t";
-       myfile << "3\t";
-       myfile << "2212";
-       myfile << "\t 0\t 0\t 0\t";
+       myfile << "1\t";
+       myfile << event->particles[6].pdgId;
+       myfile << "\t 1\t 0\t 0\t";
        myfile << pOut->Px();
        myfile << "\t";
        myfile << pOut->Py();
@@ -471,7 +473,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
     if (vmDecay1 && vmDecay2)
       {
 	myfile << "8\t";
-	myfile << "4\t";
+	myfile << "1\t";
 	myfile << daughterID;
 	myfile << "\t 0\t 0\t 0\t";
 	myfile << vmDecay1->Px();
@@ -486,7 +488,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
 	myfile << "\t 0\t 0\t 0\n";
 
 	myfile << "9\t";
-	myfile << "4\t";
+	myfile << "1\t";
 	myfile << -daughterID;
 	myfile << "\t 0\t 0\t 0\t";
 	myfile << vmDecay2->Px();
