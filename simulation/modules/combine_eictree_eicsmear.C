@@ -1,10 +1,18 @@
 // Plots relevant eta distributions for DVMP
 
 #include <vector>
+#include <stdio.h>
+#pragma once
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
+#include <eicsmear/functions.h>
+#include <eicsmear/erhic/EventPythia.h>
+#include <eicsmear/smear/EventS.h>
+R__LOAD_LIBRARY(libeicsmear.so)
+#endif
 int combine_eictree_eicsmear(
-                                 TString infile_eictree = "../output_files/combine_eictree_eicsmear_50k/50k_Sartre_18x275_eAu_JPsi_ee_incoherent_bNonSat_eictree.root",
-				 TString infile_eicsmear = "../output_files/combine_eictree_eicsmear_50k/50k_Sartre_18x275_eAu_JPsi_ee_incoherent_bNonSat_eictree.smear.root",
-				 TString outfilename = "../output_files/combine_eictree_eicsmear_50k/50k_Sartre_18x275_eAu_JPsi_ee_incoherent_bNonSat_eictree.combine.root"
+                                 TString infile_eictree = "/sphenix/user/gregtom3/matousek_sartre/data/eictree_output/100_sample.root",
+				 TString infile_eicsmear = "/sphenix/user/gregtom3/matousek_sartre/data/smear_output/100_sample.smear.root",
+				 TString outfilename = "100_sample_combine.root"
                                  )
 {
 
@@ -279,65 +287,65 @@ int combine_eictree_eicsmear(
       unsigned ntracks = eventS->GetNTracks();
       
       // Assume all Smeared Particles are not findable
-       reco_beam_lepton_px=NULL;
-       reco_beam_lepton_py=NULL;
-       reco_beam_lepton_pz=NULL;
-       reco_beam_lepton_pt=NULL;
-       reco_beam_lepton_p=NULL;
-       reco_beam_lepton_phi=NULL;
-       reco_beam_lepton_theta=NULL;
-       reco_beam_lepton_eta=NULL;
-       reco_beam_lepton_id=NULL;
+       reco_beam_lepton_px=0.0;
+       reco_beam_lepton_py=0.0;
+       reco_beam_lepton_pz=0.0;
+       reco_beam_lepton_pt=0.0;
+       reco_beam_lepton_p=0.0;
+       reco_beam_lepton_phi=0.0;
+       reco_beam_lepton_theta=0.0;
+       reco_beam_lepton_eta=0.0;
+       reco_beam_lepton_id=0.0;
        
-       reco_beam_hadron_px=NULL;
-       reco_beam_hadron_py=NULL;
-       reco_beam_hadron_pz=NULL;
-       reco_beam_hadron_pt=NULL;
-       reco_beam_hadron_p=NULL;
-       reco_beam_hadron_phi=NULL;
-       reco_beam_hadron_theta=NULL;
-       reco_beam_hadron_eta=NULL;
-       reco_beam_hadron_id=NULL;
+       reco_beam_hadron_px=0.0;
+       reco_beam_hadron_py=0.0;
+       reco_beam_hadron_pz=0.0;
+       reco_beam_hadron_pt=0.0;
+       reco_beam_hadron_p=0.0;
+       reco_beam_hadron_phi=0.0;
+       reco_beam_hadron_theta=0.0;
+       reco_beam_hadron_eta=0.0;
+       reco_beam_hadron_id=0.0;
        
-       reco_scattered_lepton_px=NULL;
-       reco_scattered_lepton_py=NULL;
-       reco_scattered_lepton_pz=NULL;
-       reco_scattered_lepton_pt=NULL;
-       reco_scattered_lepton_p=NULL;
-       reco_scattered_lepton_phi=NULL;
-       reco_scattered_lepton_theta=NULL;
-       reco_scattered_lepton_eta=NULL;
-       reco_scattered_lepton_id=NULL;
+       reco_scattered_lepton_px=0.0;
+       reco_scattered_lepton_py=0.0;
+       reco_scattered_lepton_pz=0.0;
+       reco_scattered_lepton_pt=0.0;
+       reco_scattered_lepton_p=0.0;
+       reco_scattered_lepton_phi=0.0;
+       reco_scattered_lepton_theta=0.0;
+       reco_scattered_lepton_eta=0.0;
+       reco_scattered_lepton_id=0.0;
        
-       reco_scattered_hadron_px=NULL;
-       reco_scattered_hadron_py=NULL;
-       reco_scattered_hadron_pz=NULL;
-       reco_scattered_hadron_pt=NULL;
-       reco_scattered_hadron_p=NULL;
-       reco_scattered_hadron_phi=NULL;
-       reco_scattered_hadron_theta=NULL;
-       reco_scattered_hadron_eta=NULL;
-       reco_scattered_hadron_id=NULL;
+       reco_scattered_hadron_px=0.0;
+       reco_scattered_hadron_py=0.0;
+       reco_scattered_hadron_pz=0.0;
+       reco_scattered_hadron_pt=0.0;
+       reco_scattered_hadron_p=0.0;
+       reco_scattered_hadron_phi=0.0;
+       reco_scattered_hadron_theta=0.0;
+       reco_scattered_hadron_eta=0.0;
+       reco_scattered_hadron_id=0.0;
        
-       reco_decayed_electron_px=NULL;
-       reco_decayed_electron_py=NULL;
-       reco_decayed_electron_pz=NULL;
-       reco_decayed_electron_pt=NULL;
-       reco_decayed_electron_p=NULL;
-       reco_decayed_electron_phi=NULL;
-       reco_decayed_electron_theta=NULL;
-       reco_decayed_electron_eta=NULL;
-       reco_decayed_electron_id=NULL;
+       reco_decayed_electron_px=0.0;
+       reco_decayed_electron_py=0.0;
+       reco_decayed_electron_pz=0.0;
+       reco_decayed_electron_pt=0.0;
+       reco_decayed_electron_p=0.0;
+       reco_decayed_electron_phi=0.0;
+       reco_decayed_electron_theta=0.0;
+       reco_decayed_electron_eta=0.0;
+       reco_decayed_electron_id=0.0;
        
-       reco_decayed_positron_px=NULL;
-       reco_decayed_positron_py=NULL;
-       reco_decayed_positron_pz=NULL;
-       reco_decayed_positron_pt=NULL;
-       reco_decayed_positron_p=NULL;
-       reco_decayed_positron_phi=NULL;
-       reco_decayed_positron_theta=NULL;
-       reco_decayed_positron_eta=NULL;
-       reco_decayed_positron_id=NULL;
+       reco_decayed_positron_px=0.0;
+       reco_decayed_positron_py=0.0;
+       reco_decayed_positron_pz=0.0;
+       reco_decayed_positron_pt=0.0;
+       reco_decayed_positron_p=0.0;
+       reco_decayed_positron_phi=0.0;
+       reco_decayed_positron_theta=0.0;
+       reco_decayed_positron_eta=0.0;
+       reco_decayed_positron_id=0.0;
        
        // Clear all vectors from nuclear breakup
        true_breakup_px.clear();

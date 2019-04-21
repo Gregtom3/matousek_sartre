@@ -35,9 +35,9 @@ PHSartre::PHSartre(const std::string &name)
   , daughterID(-1)
   , daughterMasses{0., 0.}
   , doPerformDecay(false)
-  , _filename(name)
-  , _tfile(nullptr)
   , myfile(nullptr)
+  // , _filename(name)
+  //  , _tfile(nullptr)
 {
   char *charPath = getenv("SARTRE_DIR");
   if (!charPath)
@@ -104,11 +104,12 @@ int PHSartre::Init(PHCompositeNode *topNode)
     cout << endl;
   }
 
-  _tfile = new TFile(TString(_filename.c_str())+".root", "RECREATE");
-  TString eictreeout =  TString(_filename.c_str())+"_eictree.txt";
-  myfile.open(eictreeout);
-  
-   myfile << "PYTHIA EVENT FILE\n============================================\nI, ievent, genevent, subprocess, nucleon, targetparton, xtargparton, beamparton, xbeamparton, thetabeamparton, truey, trueQ2, truex, trueW2, trueNu, leptonphi, s_hat, t_hat, u_hat, pt2_hat, Q2_hat, F2, F1, R, sigma_rad, SigRadCor, EBrems, photonflux, nrTracks\n============================================\nI, K(I,1)  K(I,2)  K(I,3)  K(I,4)  K(I,5)             P(I,1)  P(I,2)  P(I,3)  P(I,4)  P(I,5) V(I,1)  V(I,2)  V(I,3)\n============================================\n";
+  //_tfile = new TFile(TString(_filename.c_str())+".root", "RECREATE");
+  // std::string _filename = "testeroni";
+  //TString eictreeout =  TString(_filename.c_str());
+  //myfile.open(eictreeout);
+  myfile = new ofstream(this->Name(),ios::out);
+  *myfile << "PYTHIA EVENT FILE\n============================================\nI, ievent, genevent, subprocess, nucleon, targetparton, xtargparton, beamparton, xbeamparton, thetabeamparton, truey, trueQ2, truex, trueW2, trueNu, leptonphi, s_hat, t_hat, u_hat, pt2_hat, Q2_hat, F2, F1, R, sigma_rad, SigRadCor, EBrems, photonflux, nrTracks\n============================================\nI, K(I,1)  K(I,2)  K(I,3)  K(I,4)  K(I,5)             P(I,1)  P(I,2)  P(I,3)  P(I,4)  P(I,5) V(I,1)  V(I,2)  V(I,3)\n============================================\n";
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -132,13 +133,14 @@ int PHSartre::End(PHCompositeNode *topNode)
        << " = " << _eventcount / float(_gencount) << endl;
   cout << " *-------  End PHSARTRE Trigger Statistics  ------------------------"
        << "-------------------------------------------------* " << endl;
-
-  _tfile->cd();
-  TVectorD xsection(1);
-  xsection[0]=_sartre->totalCrossSection();
-  xsection.Write("xsec");
-  myfile.close();
-  _tfile->Close();
+  return Fun4AllReturnCodes::EVENT_OK;
+  //TFile *_tfile = new TFile(TString(_filename.c_str())+".root", "RECREATE");
+  //_tfile->cd();
+  //TVectorD xsection(1);
+  //xsection[0]=_sartre->totalCrossSection();
+  //xsection.Write("xsec");
+  //  myfile->close();
+  //_tfile->Close();
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -292,111 +294,103 @@ int PHSartre::process_event(PHCompositeNode *topNode)
 
   // add some information to the event
   genevent->set_event_number(_eventcount);
-  myfile << "0"; // I
-  myfile << "\t"; 
-  myfile << _eventcount; // ievent
-  myfile << "\t"; 
-  myfile << "1"; //genevent
-  myfile << "\t";
-  myfile << "0\t 0\t 0\t 0\t 0\t 0\t 0\t"; //subprocess
-  myfile << event->y; //truey
-  myfile << "\t";
-  myfile << event->Q2; //trueQ2
-  myfile << "\t";
-  myfile << event->x; //truex
-  myfile << "\t";
-  myfile << event->W; //trueW
-  myfile << "\t 0\t 0.1\t"; //trueNu
-  myfile << event->s; //trueS
-  myfile << "\t";
-  myfile << event->t; //trueT
-  myfile << "\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t\n";
-  myfile << "============================================\n";
+  *myfile << "0"; // I
+  *myfile << "\t"; 
+  *myfile << _eventcount; // ievent
+  *myfile << "\t"; 
+  *myfile << "1"; //genevent
+  *myfile << "\t";
+  *myfile << "0\t 0\t 0\t 0\t 0\t 0\t 0\t"; //subprocess
+  *myfile << event->y; //truey
+  *myfile << "\t";
+  *myfile << event->Q2; //trueQ2
+  *myfile << "\t";
+  *myfile << event->x; //truex
+  *myfile << "\t";
+  *myfile << event->W; //trueW
+  *myfile << "\t 0\t 0.1\t"; //trueNu
+  *myfile << event->s; //trueS
+  *myfile << "\t";
+  *myfile << event->t; //trueT
+  *myfile << "\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t 0\t\n";
+  *myfile << "============================================\n";
 
-  
-  /* event_x=event->x;
-  event_Q2=event->Q2;
-  event_t=event->t;
-  event_W=event->W;
-  event_y=event->y;
-  event_s=event->s;*/
-
-  /* Push back initial particle vectors */
+  //Push back initial particle vectors
   // eIn
-  myfile << "1\t"; //I
-  myfile << "21\t"; //Status (21 for beam)
-  myfile << "11\t"; //PDG
-  myfile << "0\t 0\t 0\t"; //Bogus
-  myfile << eIn->Px(); //Px
-  myfile << "\t"; 
-  myfile << eIn->Py(); //Py
-  myfile << "\t";
-  myfile << eIn->Pz(); //Pz
-  myfile << "\t";
-  myfile << eIn->E(); //Energy
-  myfile << "\t";
-  myfile << eIn->M(); //Mass
-  myfile << "\t 0\t 0\t 0\n"; //Vertex
+  *myfile << "1\t"; //I
+  *myfile << "21\t"; //Status (21 for beam)
+  *myfile << "11\t"; //PDG
+  *myfile << "0\t 0\t 0\t"; //Bogus
+  *myfile << eIn->Px(); //Px
+  *myfile << "\t"; 
+  *myfile << eIn->Py(); //Py
+  *myfile << "\t";
+  *myfile << eIn->Pz(); //Pz
+  *myfile << "\t";
+  *myfile << eIn->E(); //Energy
+  *myfile << "\t";
+  *myfile << eIn->M(); //Mass
+  *myfile << "\t 0\t 0\t 0\n"; //Vertex
   // pIn
-  myfile << "2\t";
-  myfile << "21\t"; // (21 for beam)
-  myfile << "2212\t";
-  myfile << "0\t 0\t 0\t";
-  myfile << pIn->Px();
-  myfile << "\t";
-  myfile << pIn->Py();
-  myfile << "\t";
-  myfile << pIn->Pz();
-  myfile << "\t";
-  myfile << pIn->E();
-  myfile << "\t";
-  myfile << pIn->M();
-  myfile << "\t 0\t 0\t 0\n";
+  *myfile << "2\t";
+  *myfile << "21\t"; // (21 for beam)
+  *myfile << "2212\t";
+  *myfile << "0\t 0\t 0\t";
+  *myfile << pIn->Px();
+  *myfile << "\t";
+  *myfile << pIn->Py();
+  *myfile << "\t";
+  *myfile << pIn->Pz();
+  *myfile << "\t";
+  *myfile << pIn->E();
+  *myfile << "\t";
+  *myfile << pIn->M();
+  *myfile << "\t 0\t 0\t 0\n";
   // gamma
-  myfile << "3\t";
-  myfile << "21\t"; 
-  myfile << "22\t";
-  myfile << "0\t 0\t 0\t";
-  myfile << gamma->Px();
-  myfile << "\t";
-  myfile << gamma->Py();
-  myfile << "\t";
-  myfile << gamma->Pz();
-  myfile << "\t";
-  myfile << gamma->E();
-  myfile << "\t";
-  myfile << gamma->M();
-  myfile << "\t 0\t 0\t 0\n";
+  *myfile << "3\t";
+  *myfile << "21\t"; 
+  *myfile << "22\t";
+  *myfile << "0\t 0\t 0\t";
+  *myfile << gamma->Px();
+  *myfile << "\t";
+  *myfile << gamma->Py();
+  *myfile << "\t";
+  *myfile << gamma->Pz();
+  *myfile << "\t";
+  *myfile << gamma->E();
+  *myfile << "\t";
+  *myfile << gamma->M();
+  *myfile << "\t 0\t 0\t 0\n";
   // eOut
-  myfile << "4\t";
-  myfile << "1\t";
-  myfile << "11\t";
-  myfile << "3\t 0\t 0\t"; // 3 for scattered lepton
-  myfile << eOut->Px();
-  myfile << "\t";
-  myfile << eOut->Py();
-  myfile << "\t";
-  myfile << eOut->Pz();
-  myfile << "\t";
-  myfile << eOut->E();
-  myfile << "\t";
-  myfile << eOut->M();
-  myfile << "\t 0\t 0\t 0\n";
+  *myfile << "4\t";
+  *myfile << "1\t";
+  *myfile << "11\t";
+  *myfile << "3\t 0\t 0\t"; // 3 for scattered lepton
+  *myfile << eOut->Px();
+  *myfile << "\t";
+  *myfile << eOut->Py();
+  *myfile << "\t";
+  *myfile << eOut->Pz();
+  *myfile << "\t";
+  *myfile << eOut->E();
+  *myfile << "\t";
+  *myfile << eOut->M();
+  *myfile << "\t 0\t 0\t 0\n";
   // hPomOut
-  myfile << "5\t";
-  myfile << "2\t";
-  myfile << event->particles[5].pdgId;
-  myfile << "\t 0\t 0\t 0\t";
-  myfile << PomOut->Px();
-  myfile << "\t";
-  myfile << PomOut->Py();
-  myfile << "\t";
-  myfile << PomOut->Pz();
-  myfile << "\t";
-  myfile << PomOut->E();
-  myfile << "\t";
-  myfile << PomOut->M();
-  myfile << "\t 0\t 0\t 0\n";
+  *myfile << "5\t";
+  *myfile << "2\t";
+  *myfile << event->particles[5].pdgId;
+  *myfile << "\t 0\t 0\t 0\t";
+  *myfile << PomOut->Px();
+  *myfile << "\t";
+  *myfile << PomOut->Py();
+  *myfile << "\t";
+  *myfile << PomOut->Pz();
+  *myfile << "\t";
+  *myfile << PomOut->E();
+  *myfile << "\t";
+  *myfile << PomOut->M();
+  *myfile << "\t 0\t 0\t 0\n";
   // If this is a nuclear breakup, add in the nuclear fragments
   // Otherwise, add in the outgoing hadron
 
@@ -411,22 +405,22 @@ int PHSartre::process_event(PHCompositeNode *topNode)
 
 	// I am giving these particles a status of '5' to denote them for later analysis modules //
 	const Particle &particle = event->particles[iParticle];
-	myfile << iParticle+3;
-	myfile << "\t";
-	myfile << "1\t";
-	myfile << particle.pdgId;
-	myfile << "\t";
-	myfile << "5\t 0\t 0\t";
-	myfile << particle.p.Px();
-	myfile << "\t";
-	myfile << particle.p.Py();
-	myfile << "\t";
-	myfile << particle.p.Pz();
-	myfile << "\t";
-	myfile << particle.p.E();
-	myfile << "\t";
-	myfile << particle.p.E(); //Use mass twice
-	myfile << "\t 0\t 0\t 0\n";
+	*myfile << iParticle+3;
+	*myfile << "\t";
+	*myfile << "1\t";
+	*myfile << particle.pdgId;
+	*myfile << "\t";
+	*myfile << "5\t 0\t 0\t";
+	*myfile << particle.p.Px();
+	*myfile << "\t";
+	*myfile << particle.p.Py();
+	*myfile << "\t";
+	*myfile << particle.p.Pz();
+	*myfile << "\t";
+	*myfile << particle.p.E();
+	*myfile << "\t";
+	*myfile << particle.p.E(); //Use mass twice
+	*myfile << "\t 0\t 0\t 0\n";
 	
       }
     }
@@ -434,37 +428,37 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   else
     {
       //Outgoing Hadron
-       myfile << "6\t";
-       myfile << "1\t";
-       myfile << event->particles[6].pdgId;
-       myfile << "\t 1\t 0\t 0\t";
-       myfile << pOut->Px();
-       myfile << "\t";
-       myfile << pOut->Py();
-       myfile << "\t";
-       myfile << pOut->Pz();
-       myfile << "\t";
-       myfile << pOut->E();
-       myfile << "\t";
-       myfile << pOut->M();
-       myfile << "\t 0\t 0\t 0\n";
+       *myfile << "6\t";
+       *myfile << "1\t";
+       *myfile << event->particles[6].pdgId;
+       *myfile << "\t 1\t 0\t 0\t";
+       *myfile << pOut->Px();
+       *myfile << "\t";
+       *myfile << pOut->Py();
+       *myfile << "\t";
+       *myfile << pOut->Pz();
+       *myfile << "\t";
+       *myfile << pOut->E();
+       *myfile << "\t";
+       *myfile << pOut->M();
+       *myfile << "\t 0\t 0\t 0\n";
   }
 
   // VM
-  myfile << "7\t";
-  myfile << "2\t";
-  myfile << event->particles[4].pdgId;
-  myfile << "\t 0\t 0\t 0\t";
-  myfile << vm->Px();
-  myfile << "\t";
-  myfile << vm->Py();
-  myfile << "\t";
-  myfile << vm->Pz();
-  myfile << "\t";
-  myfile << vm->E();
-  myfile << "\t";
-  myfile << vm->M();
-  myfile << "\t 0\t 0\t 0\n";
+  *myfile << "7\t";
+  *myfile << "2\t";
+  *myfile << event->particles[4].pdgId;
+  *myfile << "\t 0\t 0\t 0\t";
+  *myfile << vm->Px();
+  *myfile << "\t";
+  *myfile << vm->Py();
+  *myfile << "\t";
+  *myfile << vm->Pz();
+  *myfile << "\t";
+  *myfile << vm->E();
+  *myfile << "\t";
+  *myfile << vm->M();
+  *myfile << "\t 0\t 0\t 0\n";
 
   // Add the VM decay to the event
 
@@ -472,46 +466,46 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   {
     if (vmDecay1 && vmDecay2)
       {
-	myfile << "8\t";
-	myfile << "1\t";
-	myfile << daughterID;
-	myfile << "\t 0\t 0\t 0\t";
-	myfile << vmDecay1->Px();
-	myfile << "\t";
-	myfile << vmDecay1->Py();
-	myfile << "\t";
-	myfile << vmDecay1->Pz();
-	myfile << "\t";
-	myfile << vmDecay1->E();
-	myfile << "\t";
-	myfile << vmDecay1->M();
-	myfile << "\t 0\t 0\t 0\n";
+	*myfile << "8\t";
+	*myfile << "1\t";
+	*myfile << daughterID;
+	*myfile << "\t 0\t 0\t 0\t";
+	*myfile << vmDecay1->Px();
+	*myfile << "\t";
+	*myfile << vmDecay1->Py();
+	*myfile << "\t";
+	*myfile << vmDecay1->Pz();
+	*myfile << "\t";
+	*myfile << vmDecay1->E();
+	*myfile << "\t";
+	*myfile << vmDecay1->M();
+	*myfile << "\t 0\t 0\t 0\n";
 
-	myfile << "9\t";
-	myfile << "1\t";
-	myfile << -daughterID;
-	myfile << "\t 0\t 0\t 0\t";
-	myfile << vmDecay2->Px();
-	myfile << "\t";
-	myfile << vmDecay2->Py();
-	myfile << "\t";
-	myfile << vmDecay2->Pz();
-	myfile << "\t";
-	myfile << vmDecay2->E();
-	myfile << "\t";
-	myfile << vmDecay2->M();
-	myfile << "\t 0\t 0\t 0\n";
+	*myfile << "9\t";
+	*myfile << "1\t";
+	*myfile << -daughterID;
+	*myfile << "\t 0\t 0\t 0\t";
+	*myfile << vmDecay2->Px();
+	*myfile << "\t";
+	*myfile << vmDecay2->Py();
+	*myfile << "\t";
+	*myfile << vmDecay2->Pz();
+	*myfile << "\t";
+	*myfile << vmDecay2->E();
+	*myfile << "\t";
+	*myfile << vmDecay2->M();
+	*myfile << "\t 0\t 0\t 0\n";
     }
     else
     {
       cout << "PHSartre: WARNING: Kinematics of Vector Meson does not allow decay!" << endl;
     }
-    myfile<<" =============== Event finished =============== \n";
+    *myfile<<" =============== Event finished =============== \n";
     if (_eventcount%1000==0)
       cout << _eventcount << " total events completed" << endl;
-    /* copy down cross section */
+    //copy down cross section
     //cross_section = _sartre->totalCrossSection();
-    /* fill event information tree */
+    //fill event information tree
     //_outTree->Fill();
   }
 
@@ -527,7 +521,7 @@ int PHSartre::process_event(PHCompositeNode *topNode)
   // print outs
 
   if (Verbosity() > 2) cout << "PHSartre::process_event - FINISHED WHOLE EVENT" << endl;
-
+  
   ++_eventcount;
   return Fun4AllReturnCodes::EVENT_OK;
 }

@@ -1,13 +1,10 @@
-/**
-   ROOT Macro using eic-smear library to 'smear' energy and momentum of MonteCarlo generated
-   particles to reflect the performance of an EIC detector based on sPHENIX.
+#pragma once
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
+#include <g4main/PHG4Reco.h>
+#include <phool/recoConsts.h>
+R__LOAD_LIBRARY(libeicsmear.so)
+#endif
 
-   See link for documentation of eic-smear package:
-
-   https://wiki.bnl.gov/eic/index.php/Smearing
-*/
-
-/** Convert pseudorapidity eta to polar angle theta */
 float eta2theta( double eta )
 {
   float theta = 2.0 * atan( exp( -1 * eta ) );
@@ -77,15 +74,29 @@ Smear::Detector BuildEicSphenix() {
    */
 
   /* Create tracking system. */
-  Smear::Acceptance::Zone zone_tracking( eta2theta( 4 ), eta2theta( -4.00 ) );
-
-  /* Try parametrization based on sPHENIX Geant4 simulation. The fit to the simulations only covers pseudorapidity -2.5 to + 2.5, so be extra careful with the parametrization outside that range. */
-  Smear::Device trackingMomentum(Smear::kP, "P * sqrt( (7.82e-3 + 4.39e-4*(-log(tan(theta/2.0)))**2 + 7.55e-4*(-log(tan(theta/2.0)))**4)**2 + ( (1.44e-3 + -5.35e-4*(-log(tan(theta/2.0)))**2 + -6.73e-5*(-log(tan(theta/2.0)))**3 + 1.37e-4*(-log(tan(theta/2.0)))**4) * P )**2 )");
-  trackingMomentum.Accept.SetGenre(Smear::kAll);
-  trackingMomentum.Accept.SetCharge(Smear::kCharged);
-  trackingMomentum.Accept.AddZone(zone_tracking);
+  /* Tracking in CEMC */
+  Smear::Device trackingMomentum_CEMC(Smear::kP, "-0.00617024+sqrt((0.00772158+-0.00307934*(-log(tan(theta/2.0)))+0.0103485*(-log(tan(theta/2.0)))^2+0.00121678*(-log(tan(theta/2.0)))^3+-0.00934239*(-log(tan(theta/2.0)))^4)^2+(-0.00934239*P+-0.00533642*P*(-log(tan(theta/2.0)))+0.0153259*P*(-log(tan(theta/2.0)))^2+-0.00406926*P*(-log(tan(theta/2.0)))^3+-0.00628814*P*(-log(tan(theta/2.0)))^4)^2+(0.00180757*P^2+-7.69322e-05*P^2*(-log(tan(theta/2.0)))+-0.000694712*P^2*(-log(tan(theta/2.0)))^2+3.46393e-05*P^2*(-log(tan(theta/2.0)))^3+0.000178284*P^2*(-log(tan(theta/2.0)))^4)^2)");
+  trackingMomentum_CEMC.Accept.SetGenre(Smear::kAll);
+  trackingMomentum_CEMC.Accept.SetCharge(Smear::kCharged);
+  trackingMomentum_CEMC.Accept.AddZone(zone_cemc);
 
   Smear::Device trackingTheta(Smear::kTheta, "0");
+  trackingTheta.Accept.SetGenre(Smear::kAll);
+  trackingTheta.Accept.SetCharge(Smear::kCharged);
+  trackingTheta.Accept.AddZone(zone_cemc);
+
+  Smear::Device trackingPhi(Smear::kPhi, "0");
+  trackingPhi.Accept.SetGenre(Smear::kAll);
+  trackingPhi.Accept.SetCharge(Smear::kCharged);
+  trackingPhi.Accept.AddZone(zone_cemc);
+
+  /* Tracking in EEMC */
+   Smear::Device trackingMomentum_EEMC(Smear::kP, "-0.0772304+sqrt((-1.23794+-2.2575*(-log(tan(theta/2.0)))+-1.39895*(-log(tan(theta/2.0)))^2+-0.374941*(-log(tan(theta/2.0)))^3+-0.0368343*(-log(tan(theta/2.0)))^4)^2+(-0.0368343*P+-0.181595*P*(-log(tan(theta/2.0)))+-0.207071*P*(-log(tan(theta/2.0)))^2+-0.0766112*P*(-log(tan(theta/2.0)))^3+-0.00962969*P*(-log(tan(theta/2.0)))^4)^2+(0.104853*P^2+0.181946*P^2*(-log(tan(theta/2.0)))+0.114157*P^2*(-log(tan(theta/2.0)))^2+0.0305872*P^2*(-log(tan(theta/2.0)))^3+0.00309452*P^2*(-log(tan(theta/2.0)))^4)^2)");
+  trackingMomentum_EEMC.Accept.SetGenre(Smear::kAll);
+  trackingMomentum_EEMC.Accept.SetCharge(Smear::kCharged);
+  trackingMomentum_EEMC.Accept.AddZone(zone_eemc);
+
+  /* Smear::Device trackingTheta(Smear::kTheta, "0");
   trackingTheta.Accept.SetGenre(Smear::kAll);
   trackingTheta.Accept.SetCharge(Smear::kCharged);
   trackingTheta.Accept.AddZone(zone_tracking);
@@ -93,20 +104,23 @@ Smear::Detector BuildEicSphenix() {
   Smear::Device trackingPhi(Smear::kPhi, "0");
   trackingPhi.Accept.SetGenre(Smear::kAll);
   trackingPhi.Accept.SetCharge(Smear::kCharged);
-  trackingPhi.Accept.AddZone(zone_tracking);
+  trackingPhi.Accept.AddZone(zone_tracking);*/
 
-  /* @TODO Below numbers are for tracking with BeAST. We need to get the parametrization for EIC-sPHENIX!!! */
-  //  Smear::Device trackingMomentum(Smear::kP, "(P*P*(0.0182031 + 0.00921047*pow((-log(tan(theta/2.0))), 2) - 0.00291243*pow((-log(tan(theta/2.0))), 4) + 0.000264353*pow((-log(tan(theta/2.0))), 6)) + P*(0.209681 + 0.275144*pow((-log(tan(theta/2.0))), 2) - 0.0436536*pow((-log(tan(theta/2.0))), 4) + 0.00367412*pow((-log(tan(theta/2.0))), 6)))*0.01");
-  //  trackingMomentum.Accept.SetCharge(Smear::kCharged);
-  //  trackingMomentum.Accept.AddZone(zone_tracking);
+  /* Tracking in FEMC */
+   Smear::Device trackingMomentum_FEMC(Smear::kP, "-0.0126778+sqrt((0.650439+-1.30173*(-log(tan(theta/2.0)))+0.951292*(-log(tan(theta/2.0)))^2+-0.290433*(-log(tan(theta/2.0)))^3+0.0311389*(-log(tan(theta/2.0)))^4)^2+(0.0311389*P+-0.0984525*P*(-log(tan(theta/2.0)))+0.103116*P*(-log(tan(theta/2.0)))^2+-0.0368756*P*(-log(tan(theta/2.0)))^3+0.0046492*P*(-log(tan(theta/2.0)))^4)^2+(0.00936494*P^2+-0.0186277*P^2*(-log(tan(theta/2.0)))+0.0133764*P^2*(-log(tan(theta/2.0)))^2+-0.00392038*P^2*(-log(tan(theta/2.0)))^3+0.000429569*P^2*(-log(tan(theta/2.0)))^4)^2)");
+  trackingMomentum_FEMC.Accept.SetGenre(Smear::kAll);
+  trackingMomentum_FEMC.Accept.SetCharge(Smear::kCharged);
+  trackingMomentum_FEMC.Accept.AddZone(zone_femc);
 
-  //  Smear::Device trackingTheta(Smear::kTheta, "((1.0/(1.0*P))*(0.752935 + 0.280370*pow((-log(tan(theta/2.0))), 2) - 0.0359713*pow((-log(tan(theta/2.0))), 4) + 0.00200623*pow((-log(tan(theta/2.0))), 6)) + 0.0282315 - 0.00998623*pow((-log(tan(theta/2.0))), 2) + 0.00117487*pow((-log(tan(theta/2.0))), 4) - 0.0000443918*pow((-log(tan(theta/2.0))), 6))*0.001");
-  //  trackingTheta.Accept.SetCharge(Smear::kCharged);
-  //  trackingTheta.Accept.AddZone(zone_tracking);
+  /* Smear::Device trackingTheta(Smear::kTheta, "0");
+  trackingTheta.Accept.SetGenre(Smear::kAll);
+  trackingTheta.Accept.SetCharge(Smear::kCharged);
+  trackingTheta.Accept.AddZone(zone_tracking);
 
-  //  Smear::Device trackingPhi(Smear::kPhi, "((1.0/(1.0*P))*(0.743977 + 0.753393*pow((-log(tan(theta/2.0))), 2) + 0.0634184*pow((-log(tan(theta/2.0))), 4) + 0.0128001*pow((-log(tan(theta/2.0))), 6)) + 0.0308753 + 0.0480770*pow((-log(tan(theta/2.0))), 2) - 0.0129859*pow((-log(tan(theta/2.0))), 4) + 0.00109374*pow((-log(tan(theta/2.0))), 6))*0.001");
-  //  trackingPhi.Accept.SetCharge(Smear::kCharged);
-  //  trackingPhi.Accept.AddZone(zone_tracking);
+  Smear::Device trackingPhi(Smear::kPhi, "0");
+  trackingPhi.Accept.SetGenre(Smear::kAll);
+  trackingPhi.Accept.SetCharge(Smear::kCharged);
+  trackingPhi.Accept.AddZone(zone_tracking);*/
 
   /* Create mRICH detector parameterization */
 
@@ -148,7 +162,9 @@ Smear::Detector BuildEicSphenix() {
   det.AddDevice(chcalE);
   det.AddDevice(fhcalE);
 
-  det.AddDevice(trackingMomentum);
+  det.AddDevice(trackingMomentum_CEMC);
+  det.AddDevice(trackingMomentum_EEMC);
+  det.AddDevice(trackingMomentum_FEMC);
   det.AddDevice(trackingTheta);
   det.AddDevice(trackingPhi);
 

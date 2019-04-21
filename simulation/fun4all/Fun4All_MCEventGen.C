@@ -1,34 +1,36 @@
 #include <stdio.h>
+#pragma once
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
+#include <fun4all/Fun4AllServer.h>
+#include <fun4all/SubsysReco.h>
+#include <phool/recoConsts.h>
+#include <phsartre/PHSartre.h>
+#include <phsartre/PHSartreParticleTrigger.h>
+R__LOAD_LIBRARY(libg4testbench.so)
+R__LOAD_LIBRARY(libPHSartre.so)
+#endif
+
 int Fun4All_MCEventGen(
-                       const int nEvents = 1000,
-                       const char * outputFileRaw = "1k_test"
+                       const int nEvents = 100,
+                       const char * outputFile = "100_sample.txt"
                        )
 {
   //===============
   // Input options
   //===============
-
+  
   // Use particle generator Sartre
   const bool runsartre = true;
-
-  //Create EIC Tree and Smear
-  const bool convert_2_eictree = true;
- 
-  // Setting Strings
-  TString outputFileText = TString(outputFileRaw) + ".root";
-  TString outputFileEICTree = "eictree_" + TString(outputFileRaw) + ".txt";
-  TString outputFileEICSmear = "eictree_" + TString(outputFileRaw) + ".root";
-
-
 
   //---------------
   // Load libraries
   //---------------
   gSystem->Load("libfun4all.so");
   gSystem->Load("libphhepmc.so");
+  gSystem->Load("libg4hough.so");
   gSystem->Load("libg4detectors.so");
+  gSystem->Load("libg4testbench.so");
   gSystem->Load("libg4eval.so");
-
   //---------------
   // Fun4All server
   //---------------
@@ -38,7 +40,7 @@ int Fun4All_MCEventGen(
 
   // just if we set some flags somewhere in this macro
   recoConsts *rc = recoConsts::instance();
- 
+  
 
   /* Set world parameters in reco consts */
   rc->set_FloatFlag("WorldSizex", 1000.);
@@ -51,7 +53,7 @@ int Fun4All_MCEventGen(
   // Event generation
   //-----------------
 
- 
+  
   if (runsartre)
     {
       // see coresoftware/generators/PHSartre/README for setup instructions
@@ -59,7 +61,7 @@ int Fun4All_MCEventGen(
       // setenv SARTRE_DIR /opt/sphenix/core/sartre-1.20_root-5.34.36
       gSystem->Load("libPHSartre.so");
 
-      PHSartre* mysartre = new PHSartre(outputFileRaw);
+      PHSartre* mysartre = new PHSartre(outputFile);
       // see coresoftware/generators/PHSartre for example config
       mysartre->set_config_file("sartre.cfg");
 
@@ -72,27 +74,14 @@ int Fun4All_MCEventGen(
       //mysartre->register_trigger((PHSartreGenTrigger *)pTrig);
       se->registerSubsystem(mysartre);
     }
-
-  // ------------------
-  // Convert to EICTree
-  // ------------------
-
-  /*if (convert_2_eictree)
-    {
-      gSystem->Load("libeicsmearana.so");
-
-      eic2smear*  mysmear = new eic2smear(outputFile);
-
-      se->registerOutputManager(mysmear);
-      }*/
   //-----------------
   // Event processing
   //-----------------
-  if (nEvents <= 0 && !readhepmc)
+  if (nEvents <= 0)
     {
       cout << "using 0 for number of events is a bad idea when using particle generators" << endl;
       cout << "it will run forever, so I just return without running anything" << endl;
-      return;
+      return 0;
     }
   else
     {
@@ -101,13 +90,18 @@ int Fun4All_MCEventGen(
       std::cout << "All done" << std::endl;
      
       delete se;
+      gSystem->Exit(0);
+    }
+  return 0;
+}
+/*
+     gROOT->LoadMacro("convert2eictree.C");
       
-      gROOT->LoadMacro("convert2eictree.C");
       convert2eictree(outputFileEICTree);
 
       gSystem->Load("libeicsmear");
 
-      gROOT->LoadMacro("eic_sphenix.C");
+      
 
       SmearTree(BuildEicSphenix(), outputFileEICSmear);
       
@@ -118,20 +112,13 @@ int Fun4All_MCEventGen(
       TFile *outputf=new TFile(outputFileEICSmear,"UPDATE");
       v->Write("xsec");
       outputf->Close();
-
+     
       std::remove(outputFileText);
       std::remove(outputFileEICTree);
       
 
       gSystem->Exit(0);
     }
+  return 0;
 }
-
-
-void
-G4Cmd(const char * cmd)
-{
-  Fun4AllServer *se = Fun4AllServer::instance();
-  PHG4Reco *g4 = (PHG4Reco *) se->getSubsysReco("PHG4RECO");
-  g4->ApplyCommand(cmd);
-}
+*/

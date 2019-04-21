@@ -137,10 +137,10 @@ class PHSartre : public SubsysReco
   //! helper for insert HepMC event to DST node and add vertex smearing
   PHHepMCGenHelper hepmc_helper;
 
-  std::string _filename;
-  TFile *_tfile;
-
-  std::ofstream myfile;
+  
+  //TFile *_tfile;
+  std::ofstream * myfile;
+  //  std::string _filename;
 };
 
 #endif /* __PHSARTRE_H__ */
